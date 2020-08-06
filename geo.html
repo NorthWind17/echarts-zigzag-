@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+        <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.js"></script>
+    </head>
+    <body></body>
+    <script>
+        var TTH = [
+            [121.50271609375, 31.74921409375],
+            [121.592086210938, 31.7084206367188],
+            [121.602584257813, 31.709262921875],
+            [121.632105742188, 31.698423078125],
+            [121.642564726563, 31.699262921875],
+            [121.783448515625, 31.6548537421875],
+            [121.877345, 31.633843],
+            [121.88232546875, 31.5940407539063],
+            [121.951314726563, 31.5521364570312],
+            [121.957056914063, 31.5059694648438],
+            [121.921920195313, 31.4620900703125],
+            [121.883863554688, 31.4460549140625],
+            [121.876749296875, 31.3888430000001],
+            [121.8837121875, 31.3328664375],
+            [121.847345, 31.2838430000001],
+            [121.821158476563, 31.2876564765625],
+            [121.702447539063, 31.3270217109375],
+            [121.553531523438, 31.4000295234375],
+            [121.537345, 31.403843],
+            [121.53271609375, 31.4092140937501],
+            [121.45619265625, 31.4571462226563],
+            [121.39345828125, 31.5299587226563],
+            [121.377345, 31.5438430000001],
+            [121.37326296875, 31.5497585273438],
+            [121.33142703125, 31.5779274726563],
+            [121.23326296875, 31.6697585273438],
+            [121.119918242188, 31.7456349921876],
+            [121.107345, 31.763843],
+            [121.11181765625, 31.7694264960937],
+            [121.192081328125, 31.8336208320313],
+            [121.27218875, 31.8682009101562],
+            [121.321783476563, 31.87437034375],
+            [121.387784453125, 31.8342800117187],
+            [121.421793242188, 31.7782888007813],
+            [121.437345, 31.7738430000001],
+            [121.443096953125, 31.7671633125001],
+            [121.50271609375, 31.74921409375],
+        ];
+
+        var aaa =
+            '@@LBBAJB@BD@T@BDbCBBD@FKHEPBDAB@nBRA@A@BHAJCB@@BB@@BTCH@J@ZI`SXQBCHGACFCDBBAB@HIDBF@NGDA@EFEACC@@CFB@CD@DBBAB@@CBAD@@EH@B@@AB@@AA@@EBCA@B@BAC@@AD@BIAKAC@G@IA@BA@GAAB@EQBIGA@IA@GYBYrĥDEU¡_[g¤A@EDAA@BIVC@AA@BOBKBAGG@@HCBBBSBCFA@@DA@@FFA@HA@@@EBCAAKG@A@@DI@@FCB@BC@BBA@A@@@A@@A@BABBBCF@FL@CPBJAFBJC@@HBBALADBFKBIFABEDIBCL@JEFAPKJHFBFADED@JADFD@AB@BBABBBB@DBH@CTHBBBADC@@VCL@PCJTfD^JNJLJHBPDV@LBLHJBZDHCAEJYDB@BLHTFBBD@@AD@DEB@@AC@@EF@D@HGD@BAFB@AF@BCJD@ABABB@AB@DCBCDADB@HAB@BB@BAD@@DP@NF';
+        var bbb = [124489, 31743];
+        // console.log('222+++' + decodePolygon(aaa, bbb));
+        /* 解码 */
+        function decodePolygon(coordinate, encodeOffsets) {
+            var result = [];
+            var prevX = encodeOffsets[0];
+            var prevY = encodeOffsets[1];
+
+            for (var i = 0; i < coordinate.length; i += 2) {
+                var x = coordinate.charCodeAt(i) - 64;
+                var y = coordinate.charCodeAt(i + 1) - 64;
+                // ZigZag decoding
+                x = (x >> 1) ^ -(x & 1);
+                y = (y >> 1) ^ -(y & 1);
+                // Delta deocding
+                x += prevX;
+                y += prevY;
+
+                prevX = x;
+                prevY = y;
+                // Dequantize
+                result.push([x / 1024, y / 1024]);
+            }
+            return result;
+        }
+        console.log('11+++' + JSON.stringify(encodePolygon(TTH)));
+        /* 压缩 */
+        function encodePolygon(coordinate) {
+            var prevX = 0,
+                prevY = 0;
+            var coorstr = '';
+            var encodeOffsets = [];
+            var result = {
+                coordinate: coorstr,
+                encodeOffsets: encodeOffsets,
+            };
+            for (var i = coordinate.length - 1; i > 0; i--) {
+                var x = coordinate[i][0];
+                var y = coordinate[i][1];
+                console.log('44++' + x);
+                x = x * 1024;
+                y = y * 1024;
+                x -= coordinate[i - 1][0] * 1024;
+                y -= coordinate[i - 1][1] * 1024;
+                x = (x << 1) ^ (x >> 31);
+                y = (y << 1) ^ (y >> 31);
+                coorstr =
+                    String.fromCharCode(x + 64) +
+                    String.fromCharCode(y + 64) +
+                    coorstr;
+            }
+            result.coordinate = '@@' + coorstr;
+            result.encodeOffsets = [
+                coordinate[0][0] * 1024,
+                coordinate[0][1] * 1024,
+            ];
+            return result;
+        }
+
+        // function encodePolygon(coordinate, encodeOffsets) {
+        //     var result = '';
+        //     var prevX = quantize(coordinate[0][0]);
+        //     var prevY = quantize(coordinate[0][1]);
+        //     // Store the origin offset
+        //     encodeOffsets[0] = prevX;
+        //     encodeOffsets[1] = prevY;
+        //     for (var i = 0; i < coordinate.length; i++) {
+        //         var point = coordinate[i];
+        //         result += encode(point[0], prevX);
+        //         result += encode(point[1], prevY);
+        //         prevX = quantize(point[0]);
+        //         prevY = quantize(point[1]);
+        //     }
+        //     return result;
+        // }
+        function encode(val, prev) {
+            // Quantization
+            val = quantize(val);
+            var tmp = val;
+            // Delta
+            val = val - prev;
+            if (((val << 1) ^ (val >> 15)) + 64 === 8232) {
+                //WTF, 8232 will get syntax error in js code
+                val--;
+            }
+            // ZigZag
+            val = (val << 1) ^ (val >> 15);
+            // add offset and get unicode
+            return String.fromCharCode(val + 64);
+            var tmp = { tmp: str };
+            try {
+                eval('(' + JSON.stringify(tmp) + ')');
+            } catch (e) {
+                console.log(val + 64);
+            }
+        }
+        function quantize(val) {
+            return Math.ceil(val * 1024);
+        }
+    </script>
+</html>
